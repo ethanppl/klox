@@ -8,6 +8,7 @@ import java.nio.file.Paths
 import kotlin.system.exitProcess
 
 private var hadError = false
+
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 fun main(args: Array<String>) {
@@ -56,15 +57,28 @@ fun run(source: String) {
     val scanner = Scanner(source)
     val tokens: ArrayList<Token> = scanner.scanTokens()
 
-    // just print the tokens for now
-    for (token in tokens) {
-        println(token)
+    val parser = Parser(tokens)
+    val expression = parser.parse()
+
+    // Stop if there was a syntax error
+    if (hadError || expression == null) {
+        return
     }
+
+    println(AstPrinter().print(expression))
 }
 
 object Klox {
     fun error(line: Int, message: String) {
         reportError(line, "", message)
+    }
+
+    fun error(token: Token, message: String) {
+        if (token.type == TokenType.EOF) {
+            reportError(token.line, "at end", message)
+        } else {
+            reportError(token.line, "at '${token.lexeme}'", message)
+        }
     }
 
     fun reportError(line: Int, location: String, message: String) {
