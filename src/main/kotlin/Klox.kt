@@ -8,6 +8,8 @@ import java.nio.file.Paths
 import kotlin.system.exitProcess
 
 private var hadError = false
+private var hadRuntimeError = false
+private val interpreter = Interpreter()
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -37,6 +39,10 @@ fun runFile(path: String) {
     if (hadError) {
         exitProcess(65)
     }
+
+    if (hadRuntimeError) {
+        exitProcess(70)
+    }
 }
 
 fun runPrompt() {
@@ -50,6 +56,7 @@ fun runPrompt() {
         run(line)
 
         hadError = false
+        hadRuntimeError = false
     }
 }
 
@@ -65,7 +72,8 @@ fun run(source: String) {
         return
     }
 
-    println(AstPrinter().print(expression))
+    // println(AstPrinter().print(expression))
+    interpreter.interpret(expression)
 }
 
 object Klox {
@@ -84,5 +92,10 @@ object Klox {
     fun reportError(line: Int, location: String, message: String) {
         println("[line $line] Error $location: $message")
         hadError = true
+    }
+
+    fun runtimeError(error: RuntimeError) {
+        println(error.message + "\n[line " + error.token.line + "]")
+        hadRuntimeError = true
     }
 }
